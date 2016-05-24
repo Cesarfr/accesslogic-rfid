@@ -135,7 +135,7 @@ class MFRC522:
 
     def AntennaOn(self):
         temp = self.Read_MFRC522(self.TxControlReg)
-        if~(temp & 0x03):
+        if ~(temp & 0x03):
             self.SetBitMask(self.TxControlReg, 0x03)
 
     def AntennaOff(self):
@@ -186,38 +186,41 @@ class MFRC522:
             if (self.Read_MFRC522(self.ErrorReg) & 0x1B) == 0x00:
                 status = self.MI_OK
 
-            if n & irqEn & 0x01:
-                status = self.MI_NOTAGERR
+                if n & irqEn & 0x01:
+                    status = self.MI_NOTAGERR
 
-            if command == self.PCD_TRANSCEIVE:
-                n = self.Read_MFRC522(self.FIFOLevelReg)
-                lastBits = self.Read_MFRC522(self.ControlReg) & 0x07
-                if lastBits != 0:
-                  backLen = (n-1)*8 + lastBits
-                else:
-                  backLen = n*8
+                if command == self.PCD_TRANSCEIVE:
+                    n = self.Read_MFRC522(self.FIFOLevelReg)
+                    lastBits = self.Read_MFRC522(self.ControlReg) & 0x07
+                    if lastBits != 0:
+                      backLen = (n-1)*8 + lastBits
+                    else:
+                      backLen = n*8
 
-                if n == 0:
-                  n = 1
-                if n > self.MAX_LEN:
-                  n = self.MAX_LEN
+                    if n == 0:
+                        n = 1
+                    if n > self.MAX_LEN:
+                        n = self.MAX_LEN
 
-                i = 0
-                while i<n:
-                  backData.append(self.Read_MFRC522(self.FIFODataReg))
-                  i += 1
+                    i = 0
+                    while i < n:
+                        backData.append(self.Read_MFRC522(self.FIFODataReg))
+                        i += 1
             else:
                 status = self.MI_ERR
 
-        return (status,backData,backLen)
+        return (status, backData, backLen)
 
     def MFRC522_Request(self, reqMode):
         status = None
         backBits = None
         TagType = []
+
         self.Write_MFRC522(self.BitFramingReg, 0x07)
+
         TagType.append(reqMode)
         (status, backData, backBits) = self.MFRC522_ToCard(self.PCD_TRANSCEIVE, TagType)
+
         if (status != self.MI_OK) | (backBits != 0x10):
             status = self.MI_ERR
 
@@ -238,14 +241,14 @@ class MFRC522:
 
         if status == self.MI_OK:
             i = 0
-        if len(backData) == 5:
-            while i < 4:
-                serNumCheck = serNumCheck ^ backData[i]
-                i += 1
-            if serNumCheck != backData[i]:
+            if len(backData) == 5:
+                while i < 4:
+                    serNumCheck = serNumCheck ^ backData[i]
+                    i += 1
+                if serNumCheck != backData[i]:
+                    status = self.MI_ERR
+            else:
                 status = self.MI_ERR
-        else:
-            status = self.MI_ERR
 
         return (status, backData)
 
@@ -253,7 +256,7 @@ class MFRC522:
         self.ClearBitMask(self.DivIrqReg, 0x04)
         self.SetBitMask(self.FIFOLevelReg, 0x80)
         i = 0
-        while i<len(pIndata):
+        while i < len(pIndata):
             self.Write_MFRC522(self.FIFODataReg, pIndata[i])
             i += 1
         self.Write_MFRC522(self.CommandReg, self.PCD_CALCCRC)
@@ -334,7 +337,7 @@ class MFRC522:
         (status, backData, backLen) = self.MFRC522_ToCard(self.PCD_TRANSCEIVE, recvData)
         if not(status == self.MI_OK):
             print "Error while reading!"
-        #i = 0
+        i = 0
         if len(backData) == 16:
             print "Sector " + str(blockAddr) + " " + str(backData)
 

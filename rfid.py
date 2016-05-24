@@ -12,7 +12,7 @@ continue_reading = True
 
 
 # Capture SIGINT for cleanup when the script is aborted
-def end_read():
+def end_read(signal, frame):
     global continue_reading
     print "Ctrl+C capturado, Finalizando lectura."
     continue_reading = False
