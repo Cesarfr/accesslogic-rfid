@@ -18,7 +18,7 @@ class RFID:
 
     @staticmethod
     def get_db():
-        client = MongoClient(host="localhost", port=27017)
+        client = MongoClient(host="192.168.0.20", port=27017)
         db = client["accesslogic"]
         return db
 
@@ -50,7 +50,7 @@ class RFID:
 
     @staticmethod
     def get_user(mydb, id_card):
-        user = mydb.posts.find(
+        user = mydb.empleados.find(
             {
                 "iTarjeta.$id": ObjectId(id_card)
             }
@@ -59,7 +59,7 @@ class RFID:
 
     @staticmethod
     def get_card_id(mydb, serie):
-        card = mydb.posts.find({"serie": serie}, {"serie": 0})
+        card = mydb.tarjetas.find({"serie": serie}, {"serie": 0})
         return card
 
 
@@ -71,9 +71,11 @@ def main():
     # Capture SIGINT for cleanup when the script is aborted
     def end_read(signal, frame):
         global continue_reading
+        global db
         print "Ctrl+C capturado, Finalizando lectura."
         continue_reading = False
         GPIO.cleanup()
+        db.close()
 
     # Hook the SIGINT
     signal.signal(signal.SIGINT, end_read)
@@ -113,26 +115,14 @@ def main():
 
             # Print UID in the LCD
             seriec = str(uid[0]) + "," + str(uid[1]) + "," + str(uid[2]) + "," + str(uid[3])
+            #print seriec
             idc = test.get_card_id(db, seriec)
-            usuario = test.get_user(db, idc)
-
-            lcd.message("   Binvenido:\n" + usuario['nombre'] + " " + usuario['aPaterno'])
-            # # This is the default key for authentication
-            # key = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
-            #
-            # # Select the scanned tag
-            # reader.MFRC522_SelectTag(uid)
-            #
-            # # Authenticate
-            # status = reader.MFRC522_Auth(reader.PICC_AUTHENT1A, 8, key, uid)
-            #
-            # # Check if authenticated
-            # if status == reader.MI_OK:
-            #     reader.MFRC522_Read(8)
-            #     reader.MFRC522_StopCrypto1()
-            # else:
-            #     print "Authentication error"
-
+            for document in idc:
+                print document['_id']
+                usuario = test.get_user(db, document['_id'])
+                for doc in usuario:
+                    lcd.message("   Binvenido:\n" + doc['nombre'] + " " + doc['apPaterno'])
+            
             # Clear de screen
             time.sleep(2)
             lcd.clear()
