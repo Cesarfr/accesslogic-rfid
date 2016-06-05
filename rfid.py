@@ -9,6 +9,7 @@ import time
 from pymongo import MongoClient
 import datetime
 from bson.objectid import ObjectId
+from bson.dbref import DBRef
 
 
 class RFID:
@@ -25,10 +26,9 @@ class RFID:
     @staticmethod
     def save_in(mydb, id_user):
         entrada = {
-            "iEmpleado": {
-                "$ref": "empleados",
-                "$id": id_user
-            },
+            "iEmpleado": [
+                DBRef(collection="empleados", id=ObjectId(id_user))
+            ],
             "horaEntrada": datetime.datetime.now()
         }
         entradas = mydb.entradas
@@ -38,10 +38,9 @@ class RFID:
     @staticmethod
     def save_out(mydb, id_user):
         salida = {
-            "iEmpleado": {
-                "$ref": "empleados",
-                "$id": id_user
-            },
+            "iEmpleado": [
+                DBRef(collection="empleados", id=ObjectId(id_user))
+            ],
             "horaSalida": datetime.datetime.now()
         }
         salidas = mydb.salidas
@@ -71,11 +70,9 @@ def main():
     # Capture SIGINT for cleanup when the script is aborted
     def end_read(signal, frame):
         global continue_reading
-        global db
         print "Ctrl+C capturado, Finalizando lectura."
         continue_reading = False
         GPIO.cleanup()
-        db.close()
 
     # Hook the SIGINT
     signal.signal(signal.SIGINT, end_read)
@@ -122,6 +119,7 @@ def main():
                 usuario = test.get_user(db, document['_id'])
                 for doc in usuario:
                     lcd.message("   Binvenido:\n" + doc['nombre'] + " " + doc['apPaterno'])
+                    test.save_in(db, doc['_id'])
             
             # Clear de screen
             time.sleep(2)
