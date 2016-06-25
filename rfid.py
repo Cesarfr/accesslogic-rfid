@@ -6,22 +6,16 @@ import MFRC522
 import signal
 import Adafruit_CharLCD as LCD
 import time
-from pymongo import MongoClient
 import datetime
 from bson.objectid import ObjectId
 from bson.dbref import DBRef
+import ConnectionDB
 
 
 class RFID:
 
-    # def __init__(self):  # special method __init__
-    #     self.gg = ""
-
-    @staticmethod
-    def get_db():
-        client = MongoClient(host="192.168.0.10", port=27017)
-        db = client["accesslogic"]
-        return db
+    def __init__(self):
+        pass
 
     @staticmethod
     def save_in(mydb, id_user, dt):
@@ -64,7 +58,8 @@ class RFID:
 
 def main():
     test = RFID()
-    db = test.get_db()
+    connection = ConnectionDB().con
+    db = connection.accesslogic
     continue_reading = True
 
     # Capture SIGINT for cleanup when the script is aborted
