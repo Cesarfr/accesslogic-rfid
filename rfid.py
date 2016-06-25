@@ -19,29 +19,29 @@ class RFID:
 
     @staticmethod
     def get_db():
-        client = MongoClient(host="192.168.0.20", port=27017)
+        client = MongoClient(host="192.168.0.10", port=27017)
         db = client["accesslogic"]
         return db
 
     @staticmethod
-    def save_in(mydb, id_user):
+    def save_in(mydb, id_user, dt):
         entrada = {
             "iEmpleado": [
                 DBRef(collection="empleados", id=ObjectId(id_user))
             ],
-            "horaEntrada": datetime.datetime.now()
+            "horaEntrada": dt
         }
         entradas = mydb.entradas
         entrada_id = entradas.insert_one(entrada).inserted_id
         print("ID de la entrada: %s" % str(entrada_id))
 
     @staticmethod
-    def save_out(mydb, id_user):
+    def save_out(mydb, id_user, dt):
         salida = {
             "iEmpleado": [
                 DBRef(collection="empleados", id=ObjectId(id_user))
             ],
-            "horaSalida": datetime.datetime.now()
+            "horaSalida": dt
         }
         salidas = mydb.salidas
         salida_id = salidas.insert_one(salida).inserted_id
@@ -118,12 +118,22 @@ def main():
                 print document['_id']
                 usuario = test.get_user(db, document['_id'])
                 for doc in usuario:
-                    lcd.message("   Binvenido:\n" + doc['nombre'] + " " + doc['apPaterno'])
-                    test.save_in(db, doc['_id'])
+                    time_now = datetime.datetime.now()
+                    ontime = datetime.datetime.replace(time_now, hour=8, minute=00, second=00, microsecond=0)
+                    retardo = datetime.datetime.replace(time_now, hour=8, minute=15, second=00, microsecond=0)
+                    if time_now <= ontime:
+                        lcd.message("Estas a tiempo")
+                    elif (time_now <= retardo) and (time_now > ontime):
+                        lcd.message("Tienes retardo")
+                    elif time_now >= retardo:
+                        lcd.message("Llegas tarde")
+                    #lcd.message("   Binvenido:\n" + doc['nombre'] + " " + doc['apPaterno'])
+                    #test.save_in(db, doc['_id'])
             
             # Clear de screen
             time.sleep(2)
             lcd.clear()
+            db.close()
 
 if __name__ == "__main__":
     main()
