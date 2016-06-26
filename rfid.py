@@ -9,7 +9,7 @@ import time
 import datetime
 # from bson.objectid import ObjectId
 from bson.dbref import DBRef
-import ConnectionDB
+from ConnectionDB import ConnectionDB
 
 
 class RFID:
@@ -66,7 +66,9 @@ class RFID:
                 "iEmpleado.$id": id_user
             }, {"horaEntrada": 1, "_id": 0}
         )
-        if today >= check["horaEntrada"]:
+        datequery = datetime.datetime.strptime(check["horaEntrada"], "%Y-%m-%d %H:%M:%S.%f")
+        print datequery
+        if today >= datequery:
             return True
         else:
             return False
