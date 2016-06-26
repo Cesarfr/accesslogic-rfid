@@ -69,9 +69,9 @@ class RFID:
         datequery = datetime.datetime.strptime(check["horaEntrada"], "%Y-%m-%d %H:%M:%S.%f")
         yesterday = today - datetime.timedelta(1)
         print datequery
-        if today >= datequery:
+        if yesterday <= datequery <= today:
             return True
-        elif datequery > yesterday:
+        else:
             return False
 
     @staticmethod
@@ -169,11 +169,11 @@ def main():
                 if time_now <= ontime:
                     print("Estas a tiempo")
                     lcd.message("   Bienvenido:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
-                    # test.save_in(db, usuario['_id'])
+                    test.save_in(db, usuario['_id'], time_now)
                 elif (time_now <= retardo) and (time_now > ontime):
                     print("Tienes retardo")
                     idi = test.get_id_inc(db, "Retardo")
-                    # test.save_incidence(db, usuario['_id'], idi['_id'], time_now)
+                    # test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
                 elif time_now >= retardo:
                     print("Llegas tarde")
                     # test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
