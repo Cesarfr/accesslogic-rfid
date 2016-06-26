@@ -7,7 +7,7 @@ import signal
 import Adafruit_CharLCD as LCD
 import time
 import datetime
-from bson.objectid import ObjectId
+# from bson.objectid import ObjectId
 from bson.dbref import DBRef
 import ConnectionDB
 
@@ -21,7 +21,7 @@ class RFID:
     def save_in(mydb, id_user, dt):
         entrada = {
             "iEmpleado": [
-                DBRef(collection="empleados", id=ObjectId(id_user))
+                DBRef(collection="empleados", id=id_user)
             ],
             "horaEntrada": dt
         }
@@ -33,7 +33,7 @@ class RFID:
     def save_out(mydb, id_user, dt):
         salida = {
             "iEmpleado": [
-                DBRef(collection="empleados", id=ObjectId(id_user))
+                DBRef(collection="empleados", id=id_user)
             ],
             "horaSalida": dt
         }
@@ -43,17 +43,57 @@ class RFID:
 
     @staticmethod
     def get_user(mydb, id_card):
-        user = mydb.empleados.find(
+        user = mydb.empleados.find_one(
             {
-                "iTarjeta.$id": ObjectId(id_card)
+                "iTarjeta.$id": id_card
             }
         )
         return user
 
     @staticmethod
     def get_card_id(mydb, serie):
-        card = mydb.tarjetas.find({"serie": serie}, {"serie": 0})
+        card = mydb.tarjetas.find_one(
+            {
+                "serie": serie
+            }, {"serie": 0}
+        )
         return card
+
+    @staticmethod
+    def check_entrance(mydb, id_user, today):
+        check = mydb.entradas.find_one(
+            {
+                "iEmpleado.$id": id_user
+            }, {"horaEntrada": 1, "_id": 0}
+        )
+        if today >= check["horaEntrada"]:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def get_id_inc(mydb, tpi):
+        idi = mydb.tipos_incidencias.find_one(
+            {
+                "nombre": tpi
+            }, {"nombre": 0}
+        )
+        return idi
+
+    @staticmethod
+    def save_incidence(mydb, id_user, today, idi):
+        incidence = {
+            "iEmpleado": [
+                DBRef(collection="empleados", id=id_user)
+            ],
+            "idTIncidencia": [
+                DBRef(collection="tipos_incidencias", id=idi)
+            ],
+            "fecha": today
+        }
+        incidencias = mydb.incidencias
+        inc_id = incidencias.insert_one(incidence).inserted_id
+        print("ID de la incidencia: %s" % str(inc_id))
 
 
 def main():
@@ -107,28 +147,37 @@ def main():
 
             # Print UID in the LCD
             seriec = str(uid[0]) + "," + str(uid[1]) + "," + str(uid[2]) + "," + str(uid[3])
-            #print seriec
+            # print seriec
             idc = test.get_card_id(db, seriec)
-            for document in idc:
-                print document['_id']
-                usuario = test.get_user(db, document['_id'])
-                for doc in usuario:
-                    time_now = datetime.datetime.now()
-                    ontime = datetime.datetime.replace(time_now, hour=8, minute=00, second=00, microsecond=0)
-                    retardo = datetime.datetime.replace(time_now, hour=8, minute=15, second=00, microsecond=0)
-                    if time_now <= ontime:
-                        lcd.message("Estas a tiempo")
-                    elif (time_now <= retardo) and (time_now > ontime):
-                        lcd.message("Tienes retardo")
-                    elif time_now >= retardo:
-                        lcd.message("Llegas tarde")
-                    #lcd.message("   Binvenido:\n" + doc['nombre'] + " " + doc['apPaterno'])
-                    #test.save_in(db, doc['_id'])
+            print idc['_id']
+            usuario = test.get_user(db, idc['_id'])
+            time_now = datetime.datetime.now()
+            # Es entrada
+            if test.check_entrance(db, usuario['_id'], time_now):
+                salida = datetime.datetime.replace(time_now, hour=14, minute=30, second=00, microsecond=0)
+                if time_now >= salida:
+                    lcd.message("Hasta pronto")
+                    # test.save_out(db, doc['_id'])
+                else:
+                    lcd.message("Aun no puedes salir")
+            else:  # Es entrada
+                ontime = datetime.datetime.replace(time_now, hour=8, minute=00, second=00, microsecond=0)
+                retardo = datetime.datetime.replace(time_now, hour=8, minute=15, second=00, microsecond=0)
+                if time_now <= ontime:
+                    print("Estas a tiempo")
+                    lcd.message("   Bienvenido:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
+                    # test.save_in(db, usuario['_id'])
+                elif (time_now <= retardo) and (time_now > ontime):
+                    print("Tienes retardo")
+                    idi = test.get_id_inc(db, "Retardo")
+                    # test.save_incidence(db, usuario['_id'], idi['_id'], time_now)
+                elif time_now >= retardo:
+                    print("Llegas tarde")
+                    # test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
             
             # Clear de screen
             time.sleep(2)
             lcd.clear()
-            db.close()
 
 if __name__ == "__main__":
     main()
