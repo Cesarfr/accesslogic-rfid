@@ -67,10 +67,11 @@ class RFID:
             }, {"horaEntrada": 1, "_id": 0}
         )
         datequery = datetime.datetime.strptime(check["horaEntrada"], "%Y-%m-%d %H:%M:%S.%f")
+        yesterday = today - datetime.timedelta(1)
         print datequery
         if today >= datequery:
             return True
-        else:
+        elif datequery > yesterday:
             return False
 
     @staticmethod
