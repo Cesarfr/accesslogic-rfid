@@ -21,5 +21,3 @@ class ConnectionDB:
     def __del__(self):
         if ConnectionDB.con is not None:
             ConnectionDB.con.close()
-            print('Database connection closed.')
-

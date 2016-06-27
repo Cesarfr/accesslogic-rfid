@@ -76,6 +76,19 @@ class RFID:
             return False
 
     @staticmethod
+    def check_exit(mydb, id_user, today):
+        check = mydb.salidas.find_one(
+            {
+                "iEmpleado.$id": id_user
+            }, {"horaSalida": 1, "_id": 0}
+        )
+        print "Hora de salida: %s" % check["horaSalida"]
+        if check["horaSalida"] <= today:
+            return True
+        else:
+            return False
+
+    @staticmethod
     def get_id_inc(mydb, tpi):
         idi = mydb.tipos_incidencias.find_one(
             {
@@ -160,8 +173,11 @@ def main():
             if test.check_entrance(db, usuario['_id'], time_now):
                 salida = datetime.datetime.replace(time_now, hour=13, minute=22, second=00, microsecond=0)
                 if time_now >= salida:
-                    lcd.message("Hasta pronto")
-                    test.save_out(db, usuario['_id'], time_now)
+                    if test.check_exit(db, usuario['_id'], time_now):
+                        lcd.message("Ya saliste")
+                    else:
+                        lcd.message("Hasta pronto")
+                        test.save_out(db, usuario['_id'], time_now)
                 else:
                     lcd.message("Aun no puedes salir")
             else:  # Es entrada
