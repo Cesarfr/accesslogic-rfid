@@ -70,7 +70,7 @@ class RFID:
         print yesterday
         print check["horaEntrada"]
         print today 
-        if yesterday <= check["horaEntrada"] <= today:
+        if yesterday <= check["horaEntrada"] >= today:
             return True
         else:
             return False
@@ -174,7 +174,7 @@ def main():
                 salida = datetime.datetime.replace(time_now, hour=13, minute=22, second=00, microsecond=0)
                 if time_now >= salida:
                     if test.check_exit(db, usuario['_id'], time_now):
-                        lcd.message("Ya saliste")
+                        lcd.message("Ya checaste\nsalida")
                     else:
                         lcd.message("Hasta pronto")
                         test.save_out(db, usuario['_id'], time_now)
