@@ -7,7 +7,6 @@ import signal
 import Adafruit_CharLCD as LCD
 import time
 import datetime
-# from bson.objectid import ObjectId
 from bson.dbref import DBRef
 from ConnectionDB import ConnectionDB
 
@@ -66,10 +65,12 @@ class RFID:
                 "iEmpleado.$id": id_user
             }, {"horaEntrada": 1, "_id": 0}
         )
-        datequery = datetime.datetime.strptime(check["horaEntrada"], "%Y-%m-%d %H:%M:%S.%f")
+        # datequery = datetime.datetime.strptime(check["horaEntrada"], "%Y-%m-%d %H:%M:%S.%f")
         yesterday = today - datetime.timedelta(1)
-        print datequery
-        if yesterday <= datequery <= today:
+        print yesterday
+        print check["horaEntrada"]
+        print today 
+        if yesterday <= check["horaEntrada"] <= today:
             return True
         else:
             return False
@@ -157,26 +158,28 @@ def main():
             time_now = datetime.datetime.now()
             # Es entrada
             if test.check_entrance(db, usuario['_id'], time_now):
-                salida = datetime.datetime.replace(time_now, hour=14, minute=30, second=00, microsecond=0)
+                salida = datetime.datetime.replace(time_now, hour=13, minute=22, second=00, microsecond=0)
                 if time_now >= salida:
                     lcd.message("Hasta pronto")
-                    # test.save_out(db, doc['_id'])
+                    test.save_out(db, usuario['_id'], time_now)
                 else:
                     lcd.message("Aun no puedes salir")
             else:  # Es entrada
-                ontime = datetime.datetime.replace(time_now, hour=8, minute=00, second=00, microsecond=0)
-                retardo = datetime.datetime.replace(time_now, hour=8, minute=15, second=00, microsecond=0)
+                ontime = datetime.datetime.replace(time_now, hour=13, minute=17, second=00, microsecond=0)
+                retardo = datetime.datetime.replace(time_now, hour=13, minute=20, second=00, microsecond=0)
                 if time_now <= ontime:
-                    print("Estas a tiempo")
                     lcd.message("   Bienvenido:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
                     test.save_in(db, usuario['_id'], time_now)
                 elif (time_now <= retardo) and (time_now > ontime):
-                    print("Tienes retardo")
+                    lcd.message("Tienes retardo:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
                     idi = test.get_id_inc(db, "Retardo")
-                    # test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
+                    test.save_in(db, usuario['_id'], time_now)                                        
+                    test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
                 elif time_now >= retardo:
-                    print("Llegas tarde")
-                    # test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
+                    lcd.message("Llegas tarde:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
+                    idi = test.get_id_inc(db, "Falta")
+                    test.save_in(db, usuario['_id'], time_now)
+                    test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
             
             # Clear de screen
             time.sleep(2)

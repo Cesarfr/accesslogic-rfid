@@ -13,7 +13,7 @@ class ConnectionDB:
     def __init__(self):
         if ConnectionDB.con is None:
             try:
-                ConnectionDB.con = MongoClient(host="192.168.0.10", port=27017)
+                ConnectionDB.con = MongoClient(host="192.168.0.30", port=27017)
             except:
                 print "Error"
                 raise
