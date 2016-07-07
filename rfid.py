@@ -67,18 +67,15 @@ class RFID:
                 }, {"horaEntrada": 1, "_id": 0}
             ).sort("horaEntrada", -1).limit(1))
 
-            yesterday = today - datetime.timedelta(1)
-
-            print "Ayer: %s" % yesterday
             print "Entrada DB: %s" % check[0]["horaEntrada"]
             print "Hoy: %s" % today
-            if check[0]["horaEntrada"].date() == today.date():
-                return True
-            else:
+            if check[0]["horaEntrada"] <= today:
                 return False
+            else:
+                return True
         except IndexError:
             print "No hay registros de entrada"
-            return False
+            return True
 
     @staticmethod
     def check_exit(mydb, id_user, today):
