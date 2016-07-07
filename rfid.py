@@ -186,10 +186,12 @@ def main():
             if test.check_entrance(db, usuario['_id'], time_now):
                 if time_now >= salida:
                     if test.check_exit(db, usuario['_id'], time_now):
-                        lcd.message("Ya checaste\nsalida")
+                        lcd.message("Ya checaste\nsalida" + usuario['nombre'] + " " + usuario['apPaterno'])
                     else:
-                        lcd.message("Hasta pronto")
+                        lcd.message("Hasta pronto\n")
                         test.save_out(db, usuario['_id'], time_now)
+                else:
+                    lcd.message("Aun no es hora \nde salida")
             else:  # Es entrada
                 if time_now <= ontime:
                     lcd.message("   Bienvenido:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
@@ -206,7 +208,7 @@ def main():
                     test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
             
             # Clear de screen
-            time.sleep(2)
+            time.sleep(4)
             lcd.clear()
 
 if __name__ == "__main__":

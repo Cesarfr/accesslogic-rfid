@@ -4,6 +4,8 @@
 # IntelliJ project files
 .idea
 *.iml
+ConnectionDB.pyc
+MFRC522.pyc
 out
 gen
 # Created by .ignore support plugin (hsz.mobi)
