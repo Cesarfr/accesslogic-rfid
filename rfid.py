@@ -186,9 +186,9 @@ def main():
             if test.check_entrance(db, usuario['_id'], time_now):
                 if time_now >= salida:
                     if test.check_exit(db, usuario['_id'], time_now):
-                        lcd.message("Ya checaste\nsalida" + usuario['nombre'] + " " + usuario['apPaterno'])
+                        lcd.message("Ya checaste\nsalida")
                     else:
-                        lcd.message("Hasta pronto\n")
+                        lcd.message("Hasta pronto\n" + usuario['nombre'] + " " + usuario['apPaterno'])
                         test.save_out(db, usuario['_id'], time_now)
                 else:
                     lcd.message("Aun no es hora \nde salida")
