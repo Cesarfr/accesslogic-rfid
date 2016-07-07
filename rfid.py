@@ -60,33 +60,41 @@ class RFID:
 
     @staticmethod
     def check_entrance(mydb, id_user, today):
-        check = list(mydb.entradas.find(
-            {
-                "iEmpleado.$id": id_user
-            }, {"horaEntrada": 1, "_id": 0}
-        ).sort("horaEntrada", -1).limit(1))
-        # datequery = datetime.datetime.strptime(check["horaEntrada"], "%Y-%m-%d %H:%M:%S.%f")
-        yesterday = today - datetime.timedelta(1)
+        try:
+            check = list(mydb.entradas.find(
+                {
+                    "iEmpleado.$id": id_user
+                }, {"horaEntrada": 1, "_id": 0}
+            ).sort("horaEntrada", -1).limit(1))
 
-        print "Ayer: %s" % yesterday
-        print "Entrada DB: %s" % check[0]["horaEntrada"]
-        print "Hoy: %s" % today
-        if yesterday <= check[0]["horaEntrada"] <= today:
-            return True
-        else:
+            yesterday = today - datetime.timedelta(1)
+
+            print "Ayer: %s" % yesterday
+            print "Entrada DB: %s" % check[0]["horaEntrada"]
+            print "Hoy: %s" % today
+            if check[0]["horaEntrada"].date() == today.date():
+                return True
+            else:
+                return False
+        except IndexError:
+            print "No hay registros de entrada"
             return False
 
     @staticmethod
     def check_exit(mydb, id_user, today):
-        check = list(mydb.salidas.find_one(
-            {
-                "iEmpleado.$id": id_user
-            }, {"horaSalida": 1, "_id": 0}
-        ).sort("horaSalida", -1).limit(1))
-        print "Hora de salida: %s" % check[0]["horaSalida"]
-        if check[0]["horaSalida"] <= today:
-            return True
-        else:
+        try:
+            check = list(mydb.salidas.find(
+                {
+                    "iEmpleado.$id": id_user
+                }, {"horaSalida": 1, "_id": 0}
+            ).sort("horaSalida", -1).limit(1))
+            print "Hora de salida: %s" % check[0]["horaSalida"]
+            if check[0]["horaSalida"] < today:
+                return True
+            else:
+                return False
+        except IndexError:
+            print "No hay registros de salida"
             return False
 
     @staticmethod
@@ -171,9 +179,9 @@ def main():
             usuario = test.get_user(db, idc['_id'])
             time_now = datetime.datetime.now()
 
-            ontime = datetime.datetime.replace(time_now, hour=13, minute=17, second=00, microsecond=0)
-            retardo = datetime.datetime.replace(time_now, hour=13, minute=20, second=00, microsecond=0)
-            salida = datetime.datetime.replace(time_now, hour=13, minute=22, second=00, microsecond=0)
+            ontime = datetime.datetime.replace(time_now, hour=16, minute=00, second=00, microsecond=0)
+            retardo = datetime.datetime.replace(time_now, hour=16, minute=02, second=00, microsecond=0)
+            salida = datetime.datetime.replace(time_now, hour=16, minute=05, second=00, microsecond=0)
 
             if test.check_entrance(db, usuario['_id'], time_now):
                 if time_now >= salida:
@@ -181,21 +189,21 @@ def main():
                         lcd.message("Ya checaste\nsalida")
                     else:
                         lcd.message("Hasta pronto")
-                        # test.save_out(db, usuario['_id'], time_now)
+                        test.save_out(db, usuario['_id'], time_now)
             else:  # Es entrada
                 if time_now <= ontime:
                     lcd.message("   Bienvenido:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
-                    # test.save_in(db, usuario['_id'], time_now)
+                    test.save_in(db, usuario['_id'], time_now)
                 elif (time_now <= retardo) and (time_now > ontime):
                     lcd.message("Tienes retardo:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
-                    # idi = test.get_id_inc(db, "Retardo")
-                    # test.save_in(db, usuario['_id'], time_now)
-                    # test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
+                    idi = test.get_id_inc(db, "Retardo")
+                    test.save_in(db, usuario['_id'], time_now)
+                    test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
                 elif time_now >= retardo:
                     lcd.message("Llegas tarde:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
-                    # idi = test.get_id_inc(db, "Falta")
-                    # test.save_in(db, usuario['_id'], time_now)
-                    # test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
+                    idi = test.get_id_inc(db, "Falta")
+                    test.save_in(db, usuario['_id'], time_now)
+                    test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
             
             # Clear de screen
             time.sleep(2)
