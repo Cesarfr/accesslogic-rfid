@@ -6,8 +6,7 @@ import MFRC522
 import signal
 import Adafruit_CharLCD as LCD
 import time
-import datetime
-from bson.dbref import DBRef
+import pymongo
 from ConnectionDB import ConnectionDB
 
 
@@ -25,9 +24,9 @@ class SaveUID:
             }
             tarjetas = mydb.tarjetas
             card_id = tarjetas.insert_one(tarjeta).inserted_id
-            return "ID de la tarjeta: %s" % str(card_id)
-        except IndexError:
-            return "Esta tarjeta ya pertenece a alguien"
+            return "UID guardado\ncon éxito!"
+        except pymongo.errors.DuplicateKeyError:
+            return "Esta tarjeta ya\nestá en uso!"
 
 
 def main():
