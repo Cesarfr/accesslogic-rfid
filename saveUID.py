@@ -24,9 +24,9 @@ class SaveUID:
             }
             tarjetas = mydb.tarjetas
             card_id = tarjetas.insert_one(tarjeta).inserted_id
-            return "UID guardado\ncon éxito!"
+            return "UID guardado\ncon exito!"
         except pymongo.errors.DuplicateKeyError:
-            return "Esta tarjeta ya\nestá en uso!"
+            return "Esta tarjeta ya\nesta en uso!"
 
 
 def main():
