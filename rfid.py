@@ -176,9 +176,9 @@ def main():
             usuario = test.get_user(db, idc['_id'])
             time_now = datetime.datetime.now()
 
-            ontime = datetime.datetime.replace(time_now, hour=14, minute=24, second=00, microsecond=0)
-            retardo = datetime.datetime.replace(time_now, hour=14, minute=25, second=00, microsecond=0)
-            salida = datetime.datetime.replace(time_now, hour=14, minute=26, second=00, microsecond=0)
+            ontime = datetime.datetime.replace(time_now, hour=15, minute=01, second=00, microsecond=0)
+            retardo = datetime.datetime.replace(time_now, hour=15, minute=02, second=00, microsecond=0)
+            salida = datetime.datetime.replace(time_now, hour=15, minute=05, second=00, microsecond=0)
 
             if time_now <= ontime:
                 lcd.message("   Bienvenido:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
@@ -188,7 +188,7 @@ def main():
                 idi = test.get_id_inc(db, "Retardo")
                 test.save_in(db, usuario['_id'], time_now)
                 test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
-            elif (time_now >= retardo) and (time_now < salida):
+            elif (time_now > retardo) and (time_now < salida):
                 lcd.message("Llegas tarde:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
                 idi = test.get_id_inc(db, "Falta")
                 test.save_in(db, usuario['_id'], time_now)
