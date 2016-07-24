@@ -168,7 +168,7 @@ def main():
 
         # If we have the UID, continue
         if status == reader.MI_OK:
-
+            lcd.clear()
             # Print UID in the LCD
             seriec = str(uid[0]) + "," + str(uid[1]) + "," + str(uid[2]) + "," + str(uid[3])
             # print seriec
