@@ -152,7 +152,7 @@ def main():
     time.sleep(1)
 
     print "Listo!"
-
+    lcd.message("      Hola\n   Buen dia ;)")
     # This loop keeps checking for chips. If one is near it will get the UID and authenticate
     while continue_reading:
 
@@ -215,6 +215,7 @@ def main():
             # Clear de screen
             time.sleep(4)
             lcd.clear()
+            lcd.message("      Hola\n   Buen dia ;)")
 
 if __name__ == "__main__":
     main()
