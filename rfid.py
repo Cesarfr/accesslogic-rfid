@@ -183,13 +183,13 @@ def main():
 
             if time_now <= ontime:
                 if test.check_entrance(db, usuario['_id'], time_now):
-                    lcd.message("Ya checaste entrada")
+                    lcd.message("  Ya checaste\n    entrada")
                 else:
                     lcd.message("   Bienvenido:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
                     test.save_in(db, usuario['_id'], time_now)
             elif (time_now <= retardo) and (time_now > ontime):
                 if test.check_entrance(db, usuario['_id'], time_now):
-                    lcd.message("Ya checaste entrada")
+                    lcd.message("  Ya checaste\n    entrada")
                 else:
                     lcd.message("Tienes retardo:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
                     idi = test.get_id_inc(db, "Retardo")
@@ -197,17 +197,17 @@ def main():
                     test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
             elif (time_now > retardo) and (time_now < salida):
                 if test.check_entrance(db, usuario['_id'], time_now):
-                    lcd.message("Ya checaste entrada")
+                    lcd.message("  Ya checaste\n    entrada")
                 else:
-                    lcd.message("Llegas tarde:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
+                    lcd.message(" Llegas tarde:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
                     idi = test.get_id_inc(db, "Falta")
                     test.save_in(db, usuario['_id'], time_now)
                     test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
             elif time_now >= salida:
                 if test.check_exit(db, usuario['_id'], time_now):
-                    lcd.message("Ya checaste\nsalida")
+                    lcd.message("  Ya checaste\n     salida")
                 else:
-                    lcd.message("Hasta pronto\n" + usuario['nombre'] + " " + usuario['apPaterno'])
+                    lcd.message("  Hasta pronto\n" + usuario['nombre'] + " " + usuario['apPaterno'])
                     test.save_out(db, usuario['_id'], time_now)
             else:
                 lcd.message("Aun no es hora \nde salida")
