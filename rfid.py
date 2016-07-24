@@ -69,13 +69,14 @@ class RFID:
 
             print "Entrada DB: %s" % check[0]["horaEntrada"]
             print "Hoy: %s" % today
-            if check[0]["horaEntrada"] <= today:
-                return False
-            else:
+
+            if check[0]["horaEntrada"].date() == today.date():
                 return True
+            else:
+                return False
         except IndexError:
             print "No hay registros de entrada"
-            return True
+            return False
 
     @staticmethod
     def check_exit(mydb, id_user, today):
@@ -86,10 +87,10 @@ class RFID:
                 }, {"horaSalida": 1, "_id": 0}
             ).sort("horaSalida", -1).limit(1))
             print "Hora de salida: %s" % check[0]["horaSalida"]
-            if check[0]["horaSalida"] < today:
-                return False
-            else:
+            if check[0]["horaSalida"].date() == today.date():
                 return True
+            else:
+                return False
         except IndexError:
             print "No hay registros de salida"
             return False
@@ -181,18 +182,27 @@ def main():
             salida = datetime.datetime.replace(time_now, hour=15, minute=05, second=00, microsecond=0)
 
             if time_now <= ontime:
-                lcd.message("   Bienvenido:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
-                test.save_in(db, usuario['_id'], time_now)
+                if test.check_entrance(db, usuario['_id'], time_now):
+                    lcd.message("Ya checaste entrada")
+                else:
+                    lcd.message("   Bienvenido:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
+                    test.save_in(db, usuario['_id'], time_now)
             elif (time_now <= retardo) and (time_now > ontime):
-                lcd.message("Tienes retardo:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
-                idi = test.get_id_inc(db, "Retardo")
-                test.save_in(db, usuario['_id'], time_now)
-                test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
+                if test.check_entrance(db, usuario['_id'], time_now):
+                    lcd.message("Ya checaste entrada")
+                else:
+                    lcd.message("Tienes retardo:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
+                    idi = test.get_id_inc(db, "Retardo")
+                    test.save_in(db, usuario['_id'], time_now)
+                    test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
             elif (time_now > retardo) and (time_now < salida):
-                lcd.message("Llegas tarde:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
-                idi = test.get_id_inc(db, "Falta")
-                test.save_in(db, usuario['_id'], time_now)
-                test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
+                if test.check_entrance(db, usuario['_id'], time_now):
+                    lcd.message("Ya checaste entrada")
+                else:
+                    lcd.message("Llegas tarde:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
+                    idi = test.get_id_inc(db, "Falta")
+                    test.save_in(db, usuario['_id'], time_now)
+                    test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
             elif time_now >= salida:
                 if test.check_exit(db, usuario['_id'], time_now):
                     lcd.message("Ya checaste\nsalida")
