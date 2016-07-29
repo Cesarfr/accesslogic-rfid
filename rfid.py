@@ -7,7 +7,6 @@ import signal
 import Adafruit_CharLCD as LCD
 import time
 import datetime
-from bson.dbref import DBRef
 from ConnectionDB import ConnectionDB
 
 
@@ -19,9 +18,7 @@ class RFID:
     @staticmethod
     def save_in(mydb, id_user, dt):
         entrada = {
-            "iEmpleado": [
-                DBRef(collection="empleados", id=id_user)
-            ],
+            "iEmpleado": id_user,
             "horaEntrada": dt
         }
         entradas = mydb.entradas
@@ -31,9 +28,7 @@ class RFID:
     @staticmethod
     def save_out(mydb, id_user, dt):
         salida = {
-            "iEmpleado": [
-                DBRef(collection="empleados", id=id_user)
-            ],
+            "iEmpleado": id_user,
             "horaSalida": dt
         }
         salidas = mydb.salidas
@@ -44,7 +39,7 @@ class RFID:
     def get_user(mydb, id_card):
         user = mydb.empleados.find_one(
             {
-                "iTarjeta.$id": id_card
+                "iTarjeta": id_card
             }
         )
         return user
@@ -54,7 +49,7 @@ class RFID:
         card = mydb.tarjetas.find_one(
             {
                 "serie": serie
-            }, {"serie": 0}
+            }, {"serie": 0, "estado": 0}
         )
         return card
 
@@ -63,7 +58,7 @@ class RFID:
         try:
             check = list(mydb.entradas.find(
                 {
-                    "iEmpleado.$id": id_user
+                    "iEmpleado": id_user
                 }, {"horaEntrada": 1, "_id": 0}
             ).sort("horaEntrada", -1).limit(1))
 
@@ -83,7 +78,7 @@ class RFID:
         try:
             check = list(mydb.salidas.find(
                 {
-                    "iEmpleado.$id": id_user
+                    "iEmpleado": id_user
                 }, {"horaSalida": 1, "_id": 0}
             ).sort("horaSalida", -1).limit(1))
             print "Hora de salida: %s" % check[0]["horaSalida"]
@@ -107,12 +102,8 @@ class RFID:
     @staticmethod
     def save_incidence(mydb, id_user, today, idi):
         incidence = {
-            "iEmpleado": [
-                DBRef(collection="empleados", id=id_user)
-            ],
-            "idTIncidencia": [
-                DBRef(collection="tipos_incidencias", id=idi)
-            ],
+            "iEmpleado": id_user,
+            "idTIncidencia": idi,
             "fecha": today
         }
         incidencias = mydb.incidencias
