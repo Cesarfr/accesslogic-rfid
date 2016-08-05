@@ -164,49 +164,55 @@ def main():
             seriec = str(uid[0]) + "," + str(uid[1]) + "," + str(uid[2]) + "," + str(uid[3])
             # print seriec
             idc = test.get_card_id(db, seriec)
-            print idc['_id']
-            usuario = test.get_user(db, idc['_id'])
-            time_now = datetime.datetime.now()
+            if idc is not None:
+                print idc['_id']
+                usuario = test.get_user(db, idc['_id'])
+                if usuario is not None:
+                    time_now = datetime.datetime.now()
 
-            ontime = datetime.datetime.replace(time_now, hour=15, minute=01, second=00, microsecond=0)
-            retardo = datetime.datetime.replace(time_now, hour=15, minute=02, second=00, microsecond=0)
-            salida = datetime.datetime.replace(time_now, hour=15, minute=05, second=00, microsecond=0)
+                    ontime = datetime.datetime.replace(time_now, hour=15, minute=01, second=00, microsecond=0)
+                    retardo = datetime.datetime.replace(time_now, hour=15, minute=02, second=00, microsecond=0)
+                    salida = datetime.datetime.replace(time_now, hour=15, minute=05, second=00, microsecond=0)
 
-            if time_now <= ontime:
-                if test.check_entrance(db, usuario['_id'], time_now):
-                    lcd.message("  Ya checaste\n    entrada")
+                    if time_now <= ontime:
+                        if test.check_entrance(db, usuario['_id'], time_now):
+                            lcd.message("  Ya checaste\n    entrada")
+                        else:
+                            lcd.message("   Bienvenido:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
+                            test.save_in(db, usuario['_id'], time_now)
+                    elif (time_now <= retardo) and (time_now > ontime):
+                        if test.check_entrance(db, usuario['_id'], time_now):
+                            lcd.message("  Ya checaste\n    entrada")
+                        else:
+                            lcd.message("Tienes retardo:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
+                            idi = test.get_id_inc(db, "Retardo")
+                            test.save_in(db, usuario['_id'], time_now)
+                            test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
+                    elif (time_now > retardo) and (time_now < salida):
+                        if test.check_entrance(db, usuario['_id'], time_now):
+                            lcd.message("  Ya checaste\n    entrada")
+                        else:
+                            lcd.message(" Llegas tarde:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
+                            idi = test.get_id_inc(db, "Falta")
+                            test.save_in(db, usuario['_id'], time_now)
+                            test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
+                    elif time_now >= salida:
+                        if test.check_exit(db, usuario['_id'], time_now):
+                            lcd.message("  Ya checaste\n     salida")
+                        else:
+                            lcd.message("  Hasta pronto\n" + usuario['nombre'] + " " + usuario['apPaterno'])
+                            test.save_out(db, usuario['_id'], time_now)
+                    else:
+                        lcd.message("Aun no es hora \nde salida")
+
+                    # Clear de screen
+                    time.sleep(4)
+                    lcd.clear()
+                    lcd.message("      Hola\n   Buen dia ;)")
                 else:
-                    lcd.message("   Bienvenido:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
-                    test.save_in(db, usuario['_id'], time_now)
-            elif (time_now <= retardo) and (time_now > ontime):
-                if test.check_entrance(db, usuario['_id'], time_now):
-                    lcd.message("  Ya checaste\n    entrada")
-                else:
-                    lcd.message("Tienes retardo:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
-                    idi = test.get_id_inc(db, "Retardo")
-                    test.save_in(db, usuario['_id'], time_now)
-                    test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
-            elif (time_now > retardo) and (time_now < salida):
-                if test.check_entrance(db, usuario['_id'], time_now):
-                    lcd.message("  Ya checaste\n    entrada")
-                else:
-                    lcd.message(" Llegas tarde:\n" + usuario['nombre'] + " " + usuario['apPaterno'])
-                    idi = test.get_id_inc(db, "Falta")
-                    test.save_in(db, usuario['_id'], time_now)
-                    test.save_incidence(db, usuario['_id'], time_now, idi['_id'])
-            elif time_now >= salida:
-                if test.check_exit(db, usuario['_id'], time_now):
-                    lcd.message("  Ya checaste\n     salida")
-                else:
-                    lcd.message("  Hasta pronto\n" + usuario['nombre'] + " " + usuario['apPaterno'])
-                    test.save_out(db, usuario['_id'], time_now)
+                    lcd.message("Tarjeta no \nasignada")
             else:
-                lcd.message("Aun no es hora \nde salida")
-            
-            # Clear de screen
-            time.sleep(4)
-            lcd.clear()
-            lcd.message("      Hola\n   Buen dia ;)")
+                lcd.message("Tarjeta no \nregistrada")
 
 if __name__ == "__main__":
     main()
