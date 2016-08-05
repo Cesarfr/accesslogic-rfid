@@ -204,15 +204,14 @@ def main():
                             test.save_out(db, usuario['_id'], time_now)
                     else:
                         lcd.message("Aun no es hora \nde salida")
-
-                    # Clear de screen
-                    time.sleep(4)
-                    lcd.clear()
-                    lcd.message("      Hola\n   Buen dia ;)")
                 else:
-                    lcd.message("Tarjeta no \nasignada")
+                    lcd.message("   Tarjeta no \n    asignada")
             else:
-                lcd.message("Tarjeta no \nregistrada")
+                lcd.message("   Tarjeta no \n   registrada")
+            # Clear de screen
+            time.sleep(4)
+            lcd.clear()
+            lcd.message("      Hola\n   Buen dia ;)")
 
 if __name__ == "__main__":
     main()
